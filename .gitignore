@@ -22,3 +22,10 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# Ignore vim swap files
+*.swp
+
+# goautogitignore start
+goautogitignore
+# goautogitignore end
