@@ -1,7 +1,5 @@
 /*
 TODO:
-- dryrun
-- result to stdout
 - Cleanup variable names, find better ones
 - Write some tests, make it testable
 - Better duplicates check
@@ -38,6 +36,7 @@ var (
 	flagFindExecutables *bool   = flag.Bool("exec", false, "find all files with executable bit set")
 	flagFindGoMain      *bool   = flag.Bool("gomain", true, "add executables, resulting from building go main packages")
 	flagInplace         *bool   = flag.Bool("inplace", false, "edit .gitignore in place")
+	flagDryrun          *bool   = flag.Bool("dryrun", false, "dryrun, no changes are made")
 )
 
 var (
@@ -147,7 +146,9 @@ func main() {
 	}
 
 	if *flagInplace {
-		outfile = gitignore
+		if !*flagDryrun {
+			outfile = gitignore
+		}
 		gitignoreStat, err := fGitignore.Stat()
 		if err != nil {
 			log.Fatalln(gitignore, "unable to get stat", err)
@@ -156,8 +157,6 @@ func main() {
 	}
 
 	err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
-
-	// fmt.Println(gitIgnoreExecutables)
 }
 
 func walkTree(path string, info os.FileInfo, err error) error {
