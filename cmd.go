@@ -7,6 +7,7 @@ TODO:
 - Better duplicates check
 - Sort array prior to output
 - Create .gitignore file if not yet present
+- Check with metalinter
 */
 package main
 
@@ -36,11 +37,14 @@ var (
 	flagSrcDir          *string = flag.String("dir", ".", "destination directory where .gitignore is located and where to traverse directory tree for go programs.")
 	flagFindExecutables *bool   = flag.Bool("exec", false, "find all files with executable bit set")
 	flagFindGoMain      *bool   = flag.Bool("gomain", true, "add executables, resulting from building go main packages")
+	flagInplace         *bool   = flag.Bool("inplace", false, "edit .gitignore in place")
 )
 
 var (
 	srcdir      string
 	executables []string
+	outfile     string      = "/dev/stdout"
+	outfileMode os.FileMode = 0777
 )
 
 func insert(input string, addition string) (output string, err error) {
@@ -142,7 +146,18 @@ func main() {
 		log.Fatalln("insert to gitignore failed:", err)
 	}
 
-	fmt.Println(gitIgnoreExecutables)
+	if *flagInplace {
+		outfile = gitignore
+		gitignoreStat, err := fGitignore.Stat()
+		if err != nil {
+			log.Fatalln(gitignore, "unable to get stat", err)
+		}
+		outfileMode = gitignoreStat.Mode()
+	}
+
+	err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
+
+	// fmt.Println(gitIgnoreExecutables)
 }
 
 func walkTree(path string, info os.FileInfo, err error) error {
