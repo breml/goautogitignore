@@ -3,7 +3,6 @@ TODO:
 - Cleanup variable names, find better ones
 - Write some tests, make it testable
 - Better duplicates check
-- Sort array prior to output
 - Create .gitignore file if not yet present
 - Check with metalinter
 */
@@ -17,6 +16,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -140,6 +140,7 @@ func main() {
 
 	filepath.Walk(srcdir, walkTree)
 
+	sort.Strings(executables)
 	gitIgnoreExecutables, err := insert(string(gitignoreContentBytes), strings.Join(executables, "\n"))
 	if err != nil {
 		log.Fatalln("insert to gitignore failed:", err)
