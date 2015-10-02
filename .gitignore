@@ -27,5 +27,5 @@ _testmain.go
 *.swp
 
 # goautogitignore start
-goautogitignore
+gogitignore
 # goautogitignore end
