@@ -30,13 +30,13 @@ const (
 )
 
 var (
-	flagHelpShort       *bool   = flag.Bool("h", false, "print usage")
-	flagHelp            *bool   = flag.Bool("help", false, "print usage")
-	flagSrcDir          *string = flag.String("dir", ".", "destination directory where .gitignore is located and where to traverse directory tree for go programs.")
-	flagFindExecutables *bool   = flag.Bool("exec", false, "find all files with executable bit set")
-	flagFindGoMain      *bool   = flag.Bool("gomain", true, "add executables, resulting from building go main packages")
-	flagInplace         *bool   = flag.Bool("inplace", false, "edit .gitignore in place")
-	flagDryrun          *bool   = flag.Bool("dryrun", false, "dryrun, no changes are made")
+	flagHelpShort       = flag.Bool("h", false, "print usage")
+	flagHelp            = flag.Bool("help", false, "print usage")
+	flagSrcDir          = flag.String("dir", ".", "destination directory where .gitignore is located and where to traverse directory tree for go programs.")
+	flagFindExecutables = flag.Bool("exec", false, "find all files with executable bit set")
+	flagFindGoMain      = flag.Bool("gomain", true, "add executables, resulting from building go main packages")
+	flagInplace         = flag.Bool("inplace", false, "edit .gitignore in place")
+	flagDryrun          = flag.Bool("dryrun", false, "dryrun, no changes are made")
 )
 
 var (
