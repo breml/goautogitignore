@@ -21,6 +21,7 @@ const (
 	delimiterEnd                         = comment + " " + delimiterName + " " + delimiterEndIdentifier + "\n"
 	stdout                               = "/dev/stdout"
 	stdoutMode               os.FileMode = 0777
+	defaultMode              os.FileMode = 0644
 )
 
 var (
@@ -115,19 +116,22 @@ func main() {
 
 	gitignore := srcdir + "/.gitignore"
 
+	var gitignoreContentBytes []byte
 	fGitignore, err := os.Open(gitignore)
 	if err != nil {
 		if os.IsNotExist(err) {
-			log.Fatalln(gitignore, "does not exists", err)
+			log.Println(gitignore, "does not exists, create new file")
+
 		} else {
 			log.Fatalln(gitignore, "not readable", err)
 		}
-	}
-	defer fGitignore.Close()
+	} else {
+		defer fGitignore.Close()
 
-	gitignoreContentBytes, err := ioutil.ReadFile(gitignore)
-	if err != nil {
-		log.Fatalln(gitignore, "unable to read", err)
+		gitignoreContentBytes, err = ioutil.ReadFile(gitignore)
+		if err != nil {
+			log.Fatalln(gitignore, "unable to read", err)
+		}
 	}
 
 	filepath.Walk(srcdir, walkTree)
@@ -146,11 +150,15 @@ func main() {
 		outfileMode = stdoutMode
 	} else {
 		outfile = gitignore
-		gitignoreStat, err := fGitignore.Stat()
-		if err != nil {
-			log.Fatalln(gitignore, "unable to get stat", err)
+		if fGitignore != nil {
+			gitignoreStat, err := fGitignore.Stat()
+			if err != nil {
+				log.Fatalln(gitignore, "unable to get stat", err)
+			}
+			outfileMode = gitignoreStat.Mode()
+		} else {
+			outfileMode = defaultMode
 		}
-		outfileMode = gitignoreStat.Mode()
 	}
 
 	err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
