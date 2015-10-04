@@ -13,12 +13,14 @@ import (
 )
 
 const (
-	delimiterName            string = "gogitignore"
-	delimiterStartIdentifier string = "start"
-	delimiterEndIdentifier   string = "end"
-	comment                  string = "#"
-	delimiterStart                  = "\n" + comment + " " + delimiterName + " " + delimiterStartIdentifier + "\n"
-	delimiterEnd                    = comment + " " + delimiterName + " " + delimiterEndIdentifier + "\n"
+	delimiterName            string      = "gogitignore"
+	delimiterStartIdentifier string      = "start"
+	delimiterEndIdentifier   string      = "end"
+	comment                  string      = "#"
+	delimiterStart                       = "\n" + comment + " " + delimiterName + " " + delimiterStartIdentifier + "\n"
+	delimiterEnd                         = comment + " " + delimiterName + " " + delimiterEndIdentifier + "\n"
+	stdout                               = "/dev/stdout"
+	stdoutMode               os.FileMode = 0777
 )
 
 var (
@@ -27,15 +29,13 @@ var (
 	flagSrcDir          = flag.String("dir", ".", "destination directory where .gitignore is located and where to traverse directory tree for go programs.")
 	flagFindExecutables = flag.Bool("exec", false, "find all files with executable bit set")
 	flagFindGoMain      = flag.Bool("gomain", true, "add executables, resulting from building go main packages")
-	flagInplace         = flag.Bool("inplace", false, "edit .gitignore in place")
+	flagStdout          = flag.Bool("stdout", false, "print resulting .gitignore to stdout instead of updating .gitignore in place")
 	flagDryrun          = flag.Bool("dryrun", false, "dryrun, no changes are made")
 )
 
 var (
 	srcdir      string
 	executables []string
-	outfile     string      = "/dev/stdout"
-	outfileMode os.FileMode = 0777
 )
 
 func insert(input string, addition string) (output string, err error) {
@@ -138,10 +138,14 @@ func main() {
 		log.Fatalln("insert to gitignore failed:", err)
 	}
 
-	if *flagInplace {
-		if !*flagDryrun {
-			outfile = gitignore
-		}
+	var outfile string
+	var outfileMode os.FileMode
+
+	if *flagStdout || *flagDryrun {
+		outfile = stdout
+		outfileMode = stdoutMode
+	} else {
+		outfile = gitignore
 		gitignoreStat, err := fGitignore.Stat()
 		if err != nil {
 			log.Fatalln(gitignore, "unable to get stat", err)

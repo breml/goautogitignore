@@ -20,7 +20,7 @@ For help run `gogitignore` with flag `-h` or `-help`.
 - [x] Find existing gogitignore block in .gitigore, replace if existing, create new otherwise
 - [x] Print usage
 - [x] Allow for inplace update of .gitignore
-- [ ] Make inplace mode default
+- [x] Make inplace mode default
 - [x] Allow dryrun
 - [x] Sort entries in .gitignore alphabetically
 - [ ] Cleanup variable names, find better ones
