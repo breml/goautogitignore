@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	delimiterName            string = "goautogitignore"
+	delimiterName            string = "gogitignore"
 	delimiterStartIdentifier string = "start"
 	delimiterEndIdentifier   string = "end"
 	comment                  string = "#"
