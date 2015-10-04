@@ -154,6 +154,9 @@ func main() {
 	}
 
 	err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
+	if err != nil {
+		log.Fatalln("write to", outfile, "failed:", err)
+	}
 }
 
 func walkTree(path string, info os.FileInfo, err error) error {
