@@ -1,11 +1,3 @@
-/*
-TODO:
-- Cleanup variable names, find better ones
-- Write some tests, make it testable
-- Better duplicates check
-- Create .gitignore file if not yet present
-- Check with metalinter
-*/
 package main
 
 import (
