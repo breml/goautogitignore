@@ -26,6 +26,6 @@ _testmain.go
 # Ignore vim swap files
 *.swp
 
-# goautogitignore start
+# gogitignore start
 gogitignore
-# goautogitignore end
+# gogitignore end
