@@ -112,7 +112,7 @@ func main() {
 		log.Fatalln(srcdir, "is not a directory")
 	}
 
-	gitignore := srcdir + "/.gitignore"
+	gitignore := srcdir + string(os.PathSeparator) + ".gitignore"
 
 	var gitignoreContentBytes []byte
 	fGitignore, err := os.Open(gitignore)
@@ -166,7 +166,7 @@ func main() {
 
 func walkTree(path string, info os.FileInfo, err error) error {
 	// Skip .git directory tree, .gitignore and directories
-	if strings.Contains(path, "/.git/") || strings.HasSuffix(path, ".gitignore") || info.IsDir() {
+	if strings.Contains(path, string(os.PathSeparator)+".git"+string(os.PathSeparator)) || strings.HasSuffix(path, ".gitignore") || info.IsDir() {
 		return nil
 	}
 
