@@ -19,8 +19,6 @@ const (
 	comment                  string      = "#"
 	delimiterStart                       = "\n" + comment + " " + delimiterName + " " + delimiterStartIdentifier + "\n"
 	delimiterEnd                         = comment + " " + delimiterName + " " + delimiterEndIdentifier + "\n"
-	stdout                               = "/dev/stdout"
-	stdoutMode               os.FileMode = 0777
 	defaultMode              os.FileMode = 0644
 )
 
@@ -146,8 +144,7 @@ func main() {
 	var outfileMode os.FileMode
 
 	if *flagStdout || *flagDryrun {
-		outfile = stdout
-		outfileMode = stdoutMode
+		fmt.Print(gitIgnoreExecutables)
 	} else {
 		outfile = gitignore
 		if fGitignore != nil {
@@ -159,11 +156,11 @@ func main() {
 		} else {
 			outfileMode = defaultMode
 		}
-	}
 
-	err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
-	if err != nil {
-		log.Fatalln("write to", outfile, "failed:", err)
+		err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
+		if err != nil {
+			log.Fatalln("write to", outfile, "failed:", err)
+		}
 	}
 }
 
