@@ -30,12 +30,47 @@ var (
 	flagFindGoMain      = flag.Bool("gomain", true, "add executables, resulting from building go main packages")
 	flagStdout          = flag.Bool("stdout", false, "print resulting .gitignore to stdout instead of updating .gitignore in place")
 	flagDryrun          = flag.Bool("dryrun", false, "dryrun, no changes are made")
+	flagClean           = flag.Bool("clean", false, "clean everything between gogitignore start and end markers")
 )
 
 var (
 	srcdir      string
 	executables []string
 )
+
+func clean(input string) (output string, err error) {
+	if len(input) == 0 {
+		return input, nil
+	}
+
+	if strings.Contains(input, delimiterStart) {
+		if strings.Count(input, delimiterStart) > 1 {
+			return input, errors.New("multiple instances of start delimiter")
+		}
+		if strings.Contains(input, delimiterEnd) {
+			if strings.Count(input, delimiterEnd) > 1 {
+				return input, errors.New("multiple instances of closing delimiter")
+			}
+			startPos := strings.Index(input, delimiterStart)
+			endPos := strings.Index(input, delimiterEnd) + len(delimiterEnd)
+
+			if startPos-2 >= 0 && input[startPos-2] == '\n' {
+				startPos--
+			}
+			if endPos+1 < len(input) && input[endPos+1] == '\n' {
+				endPos++
+			}
+
+			output = input[:startPos] + input[endPos:]
+		} else {
+			return input, errors.New("found no closing delimiter")
+		}
+	} else {
+		output = input
+	}
+
+	return output, nil
+}
 
 func insert(input string, addition string) (output string, err error) {
 	if len(addition) == 0 {
@@ -132,12 +167,20 @@ func main() {
 		}
 	}
 
-	filepath.Walk(srcdir, walkTree)
+	var gitIgnoreExecutables string
+	if *flagClean {
+		gitIgnoreExecutables, err = clean(string(gitignoreContentBytes))
+		if err != nil {
+			log.Fatalln("clean of gitignore failed:", err)
+		}
+	} else {
+		filepath.Walk(srcdir, walkTree)
 
-	sort.Strings(executables)
-	gitIgnoreExecutables, err := insert(string(gitignoreContentBytes), strings.Join(executables, "\n"))
-	if err != nil {
-		log.Fatalln("insert to gitignore failed:", err)
+		sort.Strings(executables)
+		gitIgnoreExecutables, err = insert(string(gitignoreContentBytes), strings.Join(executables, "\n"))
+		if err != nil {
+			log.Fatalln("insert to gitignore failed:", err)
+		}
 	}
 
 	var outfile string
