@@ -191,8 +191,8 @@ func main() {
 	} else {
 		outfile = gitignore
 		if fGitignore != nil {
-			gitignoreStat, err := fGitignore.Stat()
-			if err != nil {
+			gitignoreStat, statErr := fGitignore.Stat()
+			if statErr != nil {
 				log.Fatalln(gitignore, "unable to get stat", err)
 			}
 			outfileMode = gitignoreStat.Mode()
