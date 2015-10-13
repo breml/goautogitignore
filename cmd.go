@@ -140,7 +140,12 @@ func main() {
 			log.Fatalln(err)
 		}
 	}
-	defer fDstdir.Close()
+	defer func() {
+		err = fDstdir.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}()
 
 	_, err = fDstdir.Readdir(1)
 	if err != nil {
