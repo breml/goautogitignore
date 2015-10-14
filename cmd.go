@@ -164,7 +164,12 @@ func main() {
 			log.Fatalln(gitignore, "not readable", err)
 		}
 	} else {
-		defer fGitignore.Close()
+		defer func() {
+			err = fGitignore.Close()
+			if err != nil {
+				log.Fatalln(err)
+			}
+		}()
 
 		gitignoreContentBytes, err = ioutil.ReadFile(gitignore)
 		if err != nil {
