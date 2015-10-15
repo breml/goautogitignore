@@ -226,42 +226,56 @@ func walkTree(path string, info os.FileInfo, err error) error {
 	var appendFile string
 
 	// If -exec flag and file is executable
-	if *flagFindExecutables && info.Mode()&0111 > 0 {
-		exe, err := filepath.Rel(srcdir, path)
-		if err != nil {
-			fmt.Println("filepath.Rel", err)
-			return nil
-		}
-		appendFile = exe
-	}
+	appendFile = findExecutables(info, path)
 
 	// If -gomain flag and file is go main
+	appendFile = findGoMain(path)
+
+	executablesAppend(appendFile)
+
+	return nil
+}
+
+func findExecutables(info os.FileInfo, path string) (exe string) {
+	var err error
+
+	if *flagFindExecutables && info.Mode()&0111 > 0 {
+		exe, err = filepath.Rel(srcdir, path)
+		if err != nil {
+			fmt.Println("filepath.Rel", err)
+		}
+	}
+	return
+}
+
+func findGoMain(path string) (exe string) {
 	if *flagFindGoMain && filepath.Ext(path) == ".go" {
 		goContentBytes, err := ioutil.ReadFile(path)
 		if err != nil {
-			return nil
+			return
 		}
 
 		if strings.Contains(string(goContentBytes), "package main\n") {
 			dir := filepath.Dir(path)
 			exec := dir[strings.LastIndex(dir, string(filepath.Separator))+1:]
-			exe, err := filepath.Rel(srcdir, dir+string(filepath.Separator)+exec)
+			exe, err = filepath.Rel(srcdir, dir+string(filepath.Separator)+exec)
 			if err != nil {
 				fmt.Println("filepath.Rel", err)
-				return nil
 			}
-			appendFile = exe
 		}
 	}
+	return
+}
 
+func executablesAppend(appendFile string) {
 	if len(appendFile) > 0 {
 		// Add file only once
 		for _, exe := range executables {
 			if exe == appendFile {
-				return nil
+				return
 			}
 		}
 		executables = append(executables, appendFile)
 	}
-	return nil
+
 }
