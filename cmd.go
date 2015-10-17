@@ -184,7 +184,10 @@ func main() {
 			log.Fatalln("clean of gitignore failed:", err)
 		}
 	} else {
-		filepath.Walk(srcdir, walkTree)
+		err = filepath.Walk(srcdir, walkTree)
+		if err != nil {
+			log.Fatalln("directory walk failed:", err)
+		}
 
 		sort.Strings(executables)
 		gitIgnoreExecutables, err = insert(string(gitignoreContentBytes), strings.Join(executables, "\n"))
