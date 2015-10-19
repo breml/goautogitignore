@@ -247,10 +247,14 @@ func walkTree(path string, info os.FileInfo, err error) error {
 	var appendFile string
 
 	// If -exec flag and file is executable
-	appendFile = findExecutables(info, path)
+	if *flagFindExecutables {
+		appendFile = findExecutables(info, path)
+	}
 
 	// If -gomain flag and file is go main
-	appendFile = findGoMain(path)
+	if *flagFindGoMain {
+		appendFile = findGoMain(path)
+	}
 
 	executablesAppend(appendFile)
 
@@ -260,7 +264,7 @@ func walkTree(path string, info os.FileInfo, err error) error {
 func findExecutables(info os.FileInfo, path string) (exe string) {
 	var err error
 
-	if *flagFindExecutables && info.Mode()&0111 > 0 {
+	if info.Mode()&0111 > 0 {
 		exe, err = filepath.Rel(srcdir, path)
 		if err != nil {
 			fmt.Println("filepath.Rel", err)
@@ -270,7 +274,7 @@ func findExecutables(info os.FileInfo, path string) (exe string) {
 }
 
 func findGoMain(path string) (exe string) {
-	if *flagFindGoMain && filepath.Ext(path) == ".go" {
+	if filepath.Ext(path) == ".go" {
 		f, err := parser.ParseFile(fset, path, nil, parser.PackageClauseOnly)
 		if err != nil {
 			fmt.Println(path, "parse error", err)
@@ -297,5 +301,4 @@ func executablesAppend(appendFile string) {
 		}
 		executables = append(executables, appendFile)
 	}
-
 }
