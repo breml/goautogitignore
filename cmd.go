@@ -4,6 +4,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"go/parser"
+	"go/token"
 	"io/ioutil"
 	"log"
 	"os"
@@ -36,6 +38,7 @@ var (
 var (
 	srcdir      string
 	executables []string
+	fset        *token.FileSet
 )
 
 func clean(input string) (output string, err error) {
@@ -184,6 +187,7 @@ func main() {
 			log.Fatalln("clean of gitignore failed:", err)
 		}
 	} else {
+		fset = token.NewFileSet()
 		err = filepath.Walk(srcdir, walkTree)
 		if err != nil {
 			log.Fatalln("directory walk failed:", err)
@@ -253,12 +257,11 @@ func findExecutables(info os.FileInfo, path string) (exe string) {
 
 func findGoMain(path string) (exe string) {
 	if *flagFindGoMain && filepath.Ext(path) == ".go" {
-		goContentBytes, err := ioutil.ReadFile(path)
+		f, err := parser.ParseFile(fset, path, nil, parser.PackageClauseOnly)
 		if err != nil {
-			return
+			fmt.Println(path, "parse error", err)
 		}
-
-		if strings.Contains(string(goContentBytes), "package main\n") {
+		if f.Name.Name == "main" {
 			dir := filepath.Dir(path)
 			exec := dir[strings.LastIndex(dir, string(filepath.Separator))+1:]
 			exe, err = filepath.Rel(srcdir, dir+string(filepath.Separator)+exec)
