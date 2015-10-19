@@ -41,7 +41,109 @@ var (
 	fset        *token.FileSet
 )
 
-func clean(input string) (output string, err error) {
+func main() {
+	var err error
+
+	log.SetFlags(0)
+	flag.Parse()
+
+	if *flagHelpShort || *flagHelp {
+		flag.PrintDefaults()
+		os.Exit(0)
+	}
+
+	gitignore := locateGitignore()
+
+	gitignoreContent, outfileMode := readGitignore(gitignore)
+
+	var gitIgnoreExecutables string
+	if *flagClean {
+		gitIgnoreExecutables, err = cleanGitignore(gitignoreContent)
+		if err != nil {
+			log.Fatalln("clean of gitignore failed:", err)
+		}
+	} else {
+		gitIgnoreExecutables = updateGitignore(gitignoreContent)
+	}
+
+	if *flagStdout || *flagDryrun {
+		fmt.Print(gitIgnoreExecutables)
+	} else {
+		err = ioutil.WriteFile(gitignore, []byte(gitIgnoreExecutables), outfileMode)
+		if err != nil {
+			log.Fatalln("write to", gitignore, "failed:", err)
+		}
+	}
+}
+
+func locateGitignore() (gitignore string) {
+	var err error
+
+	srcdir, err = filepath.Abs(filepath.Clean(*flagSrcDir))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fDstdir, err := os.Open(srcdir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Fatalln(err)
+		} else {
+			log.Fatalln(err)
+		}
+	}
+	defer func() {
+		err = fDstdir.Close()
+		if err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
+	_, err = fDstdir.Readdir(1)
+	if err != nil {
+		log.Fatalln(srcdir, "is not a directory")
+	}
+
+	return srcdir + string(os.PathSeparator) + ".gitignore"
+}
+
+func readGitignore(gitignore string) (gitignoreContent string, gitignoreFilemode os.FileMode) {
+	var err error
+
+	gitignoreFilemode = defaultMode
+	fGitignore, err := os.Open(gitignore)
+	if err != nil {
+		if os.IsNotExist(err) {
+			log.Println(gitignore, "does not exists, create new file")
+		} else {
+			log.Fatalln(gitignore, "not readable", err)
+		}
+	} else {
+		defer func() {
+			err = fGitignore.Close()
+			if err != nil {
+				log.Fatalln(err)
+			}
+		}()
+
+		gitignoreContentBytes, err := ioutil.ReadFile(gitignore)
+		if err != nil {
+			log.Fatalln(gitignore, "unable to read", err)
+		}
+		gitignoreContent = string(gitignoreContentBytes)
+
+		gitignoreStat, statErr := fGitignore.Stat()
+		if statErr != nil {
+			log.Fatalln(gitignore, "unable to get stat", err)
+		}
+		gitignoreFilemode = gitignoreStat.Mode()
+
+	}
+
+	return gitignoreContent, gitignoreFilemode
+}
+
+func cleanGitignore(input string) (output string, err error) {
 	if len(input) == 0 {
 		return input, nil
 	}
@@ -73,6 +175,23 @@ func clean(input string) (output string, err error) {
 	}
 
 	return output, nil
+}
+
+func updateGitignore(gitignoreContent string) string {
+	var err error
+
+	fset = token.NewFileSet()
+	err = filepath.Walk(srcdir, walkTree)
+	if err != nil {
+		log.Fatalln("directory walk failed:", err)
+	}
+
+	sort.Strings(executables)
+	gitIgnoreExecutables, err := insert(gitignoreContent, strings.Join(executables, "\n"))
+	if err != nil {
+		log.Fatalln("insert to gitignore failed:", err)
+	}
+	return gitIgnoreExecutables
 }
 
 func insert(input string, addition string) (output string, err error) {
@@ -117,111 +236,6 @@ func insert(input string, addition string) (output string, err error) {
 	}
 
 	return output, nil
-}
-
-func main() {
-	var err error
-
-	log.SetFlags(0)
-	flag.Parse()
-
-	if *flagHelpShort || *flagHelp {
-		flag.PrintDefaults()
-		os.Exit(0)
-	}
-
-	srcdir, err = filepath.Abs(filepath.Clean(*flagSrcDir))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fDstdir, err := os.Open(srcdir)
-	if err != nil {
-		if os.IsNotExist(err) {
-			log.Fatalln(err)
-		} else {
-			log.Fatalln(err)
-		}
-	}
-	defer func() {
-		err = fDstdir.Close()
-		if err != nil {
-			log.Fatalln(err)
-		}
-	}()
-
-	_, err = fDstdir.Readdir(1)
-	if err != nil {
-		log.Fatalln(srcdir, "is not a directory")
-	}
-
-	gitignore := srcdir + string(os.PathSeparator) + ".gitignore"
-
-	var gitignoreContentBytes []byte
-	fGitignore, err := os.Open(gitignore)
-	if err != nil {
-		if os.IsNotExist(err) {
-			log.Println(gitignore, "does not exists, create new file")
-
-		} else {
-			log.Fatalln(gitignore, "not readable", err)
-		}
-	} else {
-		defer func() {
-			err = fGitignore.Close()
-			if err != nil {
-				log.Fatalln(err)
-			}
-		}()
-
-		gitignoreContentBytes, err = ioutil.ReadFile(gitignore)
-		if err != nil {
-			log.Fatalln(gitignore, "unable to read", err)
-		}
-	}
-
-	var gitIgnoreExecutables string
-	if *flagClean {
-		gitIgnoreExecutables, err = clean(string(gitignoreContentBytes))
-		if err != nil {
-			log.Fatalln("clean of gitignore failed:", err)
-		}
-	} else {
-		fset = token.NewFileSet()
-		err = filepath.Walk(srcdir, walkTree)
-		if err != nil {
-			log.Fatalln("directory walk failed:", err)
-		}
-
-		sort.Strings(executables)
-		gitIgnoreExecutables, err = insert(string(gitignoreContentBytes), strings.Join(executables, "\n"))
-		if err != nil {
-			log.Fatalln("insert to gitignore failed:", err)
-		}
-	}
-
-	var outfile string
-	var outfileMode os.FileMode
-
-	if *flagStdout || *flagDryrun {
-		fmt.Print(gitIgnoreExecutables)
-	} else {
-		outfile = gitignore
-		if fGitignore != nil {
-			gitignoreStat, statErr := fGitignore.Stat()
-			if statErr != nil {
-				log.Fatalln(gitignore, "unable to get stat", err)
-			}
-			outfileMode = gitignoreStat.Mode()
-		} else {
-			outfileMode = defaultMode
-		}
-
-		err = ioutil.WriteFile(outfile, []byte(gitIgnoreExecutables), outfileMode)
-		if err != nil {
-			log.Fatalln("write to", outfile, "failed:", err)
-		}
-	}
 }
 
 func walkTree(path string, info os.FileInfo, err error) error {

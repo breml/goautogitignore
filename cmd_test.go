@@ -52,7 +52,7 @@ func TestClean(t *testing.T) {
 			false,
 		},
 	} {
-		got, err := clean(test.input)
+		got, err := cleanGitignore(test.input)
 		if (err != nil) != test.err {
 			t.Fatalf("Expected error: %t, got error: %t, with input '%s'", test.err, (err == nil), test.input)
 		}
