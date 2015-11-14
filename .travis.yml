@@ -1,0 +1,22 @@
+language: go
+
+go:
+    - tip
+
+install:
+    - go get golang.org/x/tools/cmd/cover
+    - go get github.com/mattn/goveralls
+
+script:
+    - go test -v -covermode=count -coverprofile=coverage.out
+    - $(go env GOPATH | awk 'BEGIN{FS=":"} {print $1}')/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+
+env:
+    secure: "XIEZ+LgTupII/L6LuSgOBsL4uw4h056mBMyjc6Kda64j6Z+GVy89A6vBu9uhGX1PjGMIx5dNrVA8eoQQU+bkWIdh4aAX/UUG6JDBToPyybW2T2u5n1nGX4iNl5H79S0VjZ7KGthqmCt7vral6n6lgpb78IwSsJJzx7qzqHeXINryVYqB5/iO4/MCzQCAR+GvFdFIzQX7/6Lrfb+nsnLAegu0fwEuSzChfnhXk07g3k8+jWOLBI2GFFgNJThcr/S96c8ya+2OKpAisD3yANhhMehVp6CzCJnvkt/TbtQDtX92bT5m5cm4N0nQ/K/ukzmflwvG90RO/aVq3+0jAj8XLxam/JjCP+5ZCacrVV3ET8yEJc4CRskkzRmL1HYyKF+wPFJo3DmAZv+PFgQ5DKWRknoWPbfS0XtNIa2dEh1oYKF3iALofRMSw/xT6cWDMBlUi8qOQK/ulUJOUjNzOQ8TyH0Hp7q0vgAxgAlGpuq2J8LM/oD0+X/fRH5DmPGM6bKAdUVegyTw3nZZo5TrLoK/IMKFgKx2O1ZSV4dR8PjinnwClKRpfQGGi2H4l1rypjgnAaFLhkV1TburzKXEINqST1a5P4qneM2m5ft4nAcLSWKVIsG5HDb1prk2SfP2OIDObMGt9a8LLQnpXhTV1p1qkVhbbAIh6dyJ+ACgS2sfOiQ="
+
+notifications:
+    email: 
+        recipients:
+            - secure: "DLwBYD3SeDTGqRXcFGOWfkf0Ttw4gK8nwqp1FALNSHkljq4tlJ4jNarEcXBcbHAeXqD9S7yRKlxITgHDezMLC+bFCMqKGDjKxE/ngoFQw+vzRpwsLK8+Yb2kDU9U5tTOJhcIPTcIWYXR3ouw/vLFwJF4n62gM3/D4OPFBtly93A652cU7jBrpAKcxXBSbBXwMm25O0wYJzX3DzSwB6I7CX3xOPVdHKezOUSxDtfPPgbkLo9hppyr6QVmngjnBl6cacW1Hx2VAhG//Aj7GxA6hydvwZN2ySiNkeMunMrodGiDkbdbzw16AwmXZcT7Jm7jD4/+oAX8SGP1FgJZji7k+K7U5KRknDCMwqxf6ZjVzdQTzj31/SLLa8O83DbFedUQ2Nj2U1jcqAFIE4m8Qlt2E6eOIwpreYd5DlxT88S471JX5hVfKz4/XWD3kSwmKhUYxFm08RQFF8hH58foLYZIRr04a7afd6ytQLK0q2WjSC0iC/7IvA6mnXY0CnuLTW+9NL86C10MGUlysE+g19B3shbfVDo97jK5JoGTCtbJrhtDp7okep8XPTWy0kfDwgAq1Fb7VJiKkt43ZOTcafzbc9iGigHn6kYgSv9mgfyZFDTuTnTP+iQpNiuHz3Qpq6nff+a4uM8J+qvpCq8Kqd9/34UzzzqqggZ7R5Za1rNw10c="
+        on_success: never
+        on_failure: always
