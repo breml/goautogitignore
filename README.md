@@ -1,3 +1,6 @@
+[![Go Report Card](http://goreportcard.com/badge/breml/gogitignore)](http://goreportcard.com/report/breml/gogitignore)  
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 # gogitignore
 
 gogitignore searches a given directory for Go source files with `package main` and adds the resulting go build file (binary) to the .gitignore file.
@@ -33,4 +36,5 @@ For help run `gogitignore` with flag `-h` or `-help`.
 - [x] Use fmt.Println istead of /dev/stdout for better OS compatibility
 - [ ] Add to travis
 - [ ] Add to coveralls
-- [ ] Add to go report
+- [x] Add to go report
+- [ ] Add godoc
