@@ -3,7 +3,7 @@
 
 # gogitignore
 
-gogitignore searches a given directory for Go source files with `package main` and adds the resulting go build file (binary) to the .gitignore file.
+gogitignore searches a given directory for Go source files with `package main` and adds the resulting go build file (binary) to the .gitignore file. Find some additional information in this short [blog post](https://breml.github.io/blog/2015/10/06/gogitignore/).
 
 ## Install
 
