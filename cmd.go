@@ -36,9 +36,10 @@ var (
 )
 
 var (
-	srcdir      string
-	executables []string
-	fset        *token.FileSet
+	srcdir          string
+	executables     []string
+	executablesHash map[string]bool
+	fset            *token.FileSet
 )
 
 func main() {
@@ -180,10 +181,17 @@ func cleanGitignore(input string) (output string, err error) {
 func updateGitignore(gitignoreContent string) string {
 	var err error
 
+	executablesHash = make(map[string]bool)
+
 	fset = token.NewFileSet()
 	err = filepath.Walk(srcdir, walkTree)
 	if err != nil {
 		log.Fatalln("directory walk failed:", err)
+	}
+
+	for executable := range executablesHash {
+		fmt.Println(executable)
+		executables = append(executables, executable)
 	}
 
 	sort.Strings(executables)
@@ -293,12 +301,6 @@ func findGoMain(path string) (exe string) {
 
 func executablesAppend(appendFile string) {
 	if len(appendFile) > 0 {
-		// Add file only once
-		for _, exe := range executables {
-			if exe == appendFile {
-				return
-			}
-		}
-		executables = append(executables, appendFile)
+		executablesHash[appendFile] = true
 	}
 }
